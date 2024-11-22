@@ -17,6 +17,8 @@ namespace APP\plugins\generic\adaptsCrossrefForPostprints;
 use PKP\plugins\Hook;
 use PKP\plugins\GenericPlugin;
 use APP\core\Application;
+use APP\facades\Repo;
+use APP\plugins\generic\adaptsCrossrefForPostprints\classes\CrossrefExportAdapter;
 
 class AdaptsCrossrefForPostprintsPlugin extends GenericPlugin
 {
@@ -27,8 +29,9 @@ class AdaptsCrossrefForPostprintsPlugin extends GenericPlugin
             return true;
         }
 
-        // if ($success && $this->getEnabled($mainContextId)) {
-        // }
+        if ($success && $this->getEnabled($mainContextId)) {
+            Hook::add('preprintcrossrefxmlfilter::execute', [$this, 'adaptsCrossrefExporting']);
+        }
 
         return $success;
     }
@@ -41,6 +44,29 @@ class AdaptsCrossrefForPostprintsPlugin extends GenericPlugin
     public function getDescription()
     {
         return __('plugins.generic.adaptsCrossrefForPostprints.description');
+    }
+
+    public function adaptsCrossrefExporting($hookName, $params)
+    {
+        $preliminaryOutput = &$params[0];
+        $crossrefExportAdapter = new CrossrefExportAdapter();
+
+        $submissionNodes = $preliminaryOutput->getElementsByTagName('posted_content');
+        $submissions = [];
+
+        foreach ($submissionNodes as $submissionNode) {
+            $submissionId = $crossrefExportAdapter->getSubmissionIdFromNode($submissionNode);
+            $submission = Repo::submission()->get($submissionId);
+
+            $submission->setData('isTranslationOfDoi', '10.7531/OriginalArticle101');
+
+            if ($submission) {
+                $submissions[$submissionId] = $submission;
+            }
+        }
+
+        $adaptedExport = $crossrefExportAdapter->adaptExport($preliminaryOutput, $submissions);
+        $preliminaryOutput = $adaptedExport;
     }
 }
 

@@ -26,7 +26,7 @@ class CrossrefExportAdapter
             $submissionId = $this->getSubmissionIdFromNode($submissionNode);
             $submission = $submissions[$submissionId];
 
-            if ($submission->getData('isTranslationOfDoi')) {
+            if ($submission and $submission->getData('isTranslationOfDoi')) {
                 $this->addTranslationInfoNode($crossrefExport, $submissionNode, $submission);
             }
         }
@@ -34,7 +34,7 @@ class CrossrefExportAdapter
         return $crossrefExport;
     }
 
-    private function getSubmissionIdFromNode($postedContentNode)
+    public function getSubmissionIdFromNode($postedContentNode)
     {
         $doiDataNode = $postedContentNode->getElementsByTagName('doi_data')->item(0);
         $resourceNode = $doiDataNode->getElementsByTagName('resource')->item(0);
