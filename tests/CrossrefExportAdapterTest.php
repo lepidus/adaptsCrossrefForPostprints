@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use APP\plugins\generic\crossref\CrossrefExportDeployment;
 use APP\plugins\generic\adaptsCrossrefForPostprints\classes\CrossrefExportAdapter;
 
 class CrossrefExportAdapterTest extends TestCase
@@ -35,11 +36,19 @@ class CrossrefExportAdapterTest extends TestCase
 
     public function testAdaptationRemovesRelationsNode(): void
     {
-        $originalRelationsNode = $this->crossrefXml->getElementsByTagName('rel:program');
+        $originalSubmissionNode = $this->crossrefXml->getElementsByTagName('posted_content')->item(0);
+        $originalRelationsNode = $originalSubmissionNode->getElementsByTagNameNS(
+            CrossrefExportDeployment::CROSSREF_XMLNS_REL,
+            'program'
+        );
         $this->assertEquals(1, $originalRelationsNode->count());
 
         $adaptedExport = $this->crossrefExportAdapter->adaptExport($this->crossrefXml);
-        $adaptedRelationsNode = $this->crossrefXml->getElementsByTagName('rel:program');
+        $adaptedSubmissionNode = $adaptedExport->getElementsByTagName('posted_content')->item(0);
+        $adaptedRelationsNode = $adaptedSubmissionNode->getElementsByTagNameNS(
+            CrossrefExportDeployment::CROSSREF_XMLNS_REL,
+            'program'
+        );
 
         $this->assertEquals(0, $adaptedRelationsNode->count());
     }
