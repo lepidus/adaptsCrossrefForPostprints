@@ -6,10 +6,12 @@ use APP\plugins\generic\adaptsCrossrefForPostprints\classes\CrossrefExportAdapte
 class CrossrefExportAdapterTest extends TestCase
 {
     private $crossrefXml;
+    private $crossrefExportAdapter;
 
     public function setUp(): void
     {
         $this->crossrefXml = $this->loadCrossrefXml();
+        $this->crossrefExportAdapter = new CrossrefExportAdapter();
     }
 
     private function loadCrossrefXml()
@@ -23,13 +25,22 @@ class CrossrefExportAdapterTest extends TestCase
 
     public function testAdaptationChangesContentType(): void
     {
-        $crossrefExportAdapter = new CrossrefExportAdapter();
-
-        $adaptedExport = $crossrefExportAdapter->adaptExport($this->crossrefXml);
+        $adaptedExport = $this->crossrefExportAdapter->adaptExport($this->crossrefXml);
         $submissionNodes = $adaptedExport->getElementsByTagName('posted_content');
 
         foreach ($submissionNodes as $submissionNode) {
             $this->assertEquals('other', $submissionNode->getAttribute('type'));
         }
+    }
+
+    public function testAdaptationRemovesRelationsNode(): void
+    {
+        $originalRelationsNode = $this->crossrefXml->getElementsByTagName('rel:program');
+        $this->assertEquals(1, $originalRelationsNode->count());
+
+        $adaptedExport = $this->crossrefExportAdapter->adaptExport($this->crossrefXml);
+        $adaptedRelationsNode = $this->crossrefXml->getElementsByTagName('rel:program');
+
+        $this->assertEquals(0, $adaptedRelationsNode->count());
     }
 }
