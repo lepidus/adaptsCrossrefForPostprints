@@ -2,6 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 use APP\submission\Submission;
+use APP\publication\Publication;
 use APP\plugins\generic\crossref\CrossrefExportDeployment;
 use APP\plugins\generic\adaptsCrossrefForPostprints\classes\CrossrefExportAdapter;
 
@@ -29,10 +30,15 @@ class CrossrefExportAdapterTest extends TestCase
 
     private function createSubmission(): Submission
     {
+        $publication = new Publication();
+        $publication->setData('id', 28);
+        $publication->setData('originalDocumentDoi', '10.7531/OriginalArticle101');
+
         $submission = new Submission();
         $submission->setData('id', 27);
-        $submission->setData('isTranslationOfDoi', '10.7531/OriginalArticle101');
         $submission->setData('locale', 'pt_BR');
+        $submission->setData('publications', [$publication]);
+        $submission->setData('currentPublicationId', $publication->getId());
 
         return $submission;
     }
@@ -99,9 +105,11 @@ class CrossrefExportAdapterTest extends TestCase
             'intra_work_relation'
         )->item(0);
 
+        $publication = $this->submission->getCurrentPublication();
+
         $this->assertEquals('Portuguese translation', $descriptionNode->nodeValue);
         $this->assertEquals('isTranslationOf', $intraWorkRelationNode->getAttribute('relationship-type'));
         $this->assertEquals('doi', $intraWorkRelationNode->getAttribute('identifier-type'));
-        $this->assertEquals($this->submission->getData('isTranslationOfDoi'), $intraWorkRelationNode->nodeValue);
+        $this->assertEquals($publication->getData('originalDocumentDoi'), $intraWorkRelationNode->nodeValue);
     }
 }
