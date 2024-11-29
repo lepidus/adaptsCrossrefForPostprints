@@ -26,8 +26,11 @@ class CrossrefExportAdapter
             $submissionId = $this->getSubmissionIdFromNode($submissionNode);
             $submission = $submissions[$submissionId];
 
-            if ($submission and $submission->getData('isTranslationOfDoi')) {
-                $this->addTranslationInfoNode($crossrefExport, $submissionNode, $submission);
+            if ($submission) {
+                $publication = $submission->getCurrentPublication();
+                if ($publication->getData('originalDocumentDoi')) {
+                    $this->addTranslationInfoNode($crossrefExport, $submissionNode, $submission);
+                }
             }
         }
 
@@ -47,7 +50,8 @@ class CrossrefExportAdapter
 
     private function addTranslationInfoNode($crossrefExport, $postedContentNode, $submission)
     {
-        $originalDoi = $submission->getData('isTranslationOfDoi');
+        $publication = $submission->getCurrentPublication();
+        $originalDoi = $publication->getData('originalDocumentDoi');
         $submissionLocale = $submission->getData('locale');
         $localesMetadata = Locale::getLocales();
         $localeName = $localesMetadata[$submissionLocale]->getDisplayName();

@@ -58,8 +58,6 @@ class AdaptsCrossrefForPostprintsPlugin extends GenericPlugin
             $submissionId = $crossrefExportAdapter->getSubmissionIdFromNode($submissionNode);
             $submission = Repo::submission()->get($submissionId);
 
-            $submission->setData('isTranslationOfDoi', '10.7531/OriginalArticle101');
-
             if ($submission) {
                 $submissions[$submissionId] = $submission;
             }
